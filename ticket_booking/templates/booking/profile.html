@@ -1,0 +1,114 @@
+{% extends 'booking/base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Личный кабинет</h2>
+    
+    <!-- Информация о пользователе -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <h3 class="text-xl font-semibold text-gray-700 mb-4">Ваши данные</h3>
+        <p class="text-gray-600"><strong>Имя пользователя:</strong> {{ user.username }}</p>
+        <p class="text-gray-600"><strong>ФИО:</strong> {{ user.full_name }}</p>
+        <p class="text-gray-600"><strong>Email:</strong> {{ user.email }}</p>
+        <p class="text-gray-600"><strong>Дата рождения:</strong> {{ user.birth_date|date:"d.m.Y" }}</p>
+    </div>
+
+    <!-- Бронирования -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-700 mb-4">Ваши бронирования</h3>
+        {% if bookings %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="py-3 px-4 text-left text-gray-600 font-medium">Секция</th>
+                            <th class="py-3 px-4 text-left text-gray-600 font-medium">Ряд</th>
+                            <th class="py-3 px-4 text-left text-gray-600 font-medium">Место</th>
+                            <th class="py-3 px-4 text-left text-gray-600 font-medium">Дата брони</th>
+                            <th class="py-3 px-4 text-left text-gray-600 font-medium">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                            <tr class="border-t">
+                                <td class="py-3 px-4 text-gray-700">{{ booking.seat.section }}</td>
+                                <td class="py-3 px-4 text-gray-700">{{ booking.seat.row }}</td>
+                                <td class="py-3 px-4 text-gray-700">{{ booking.seat.number }}</td>
+                                <td class="py-3 px-4 text-gray-700">{{ booking.booking_date|date:"d.m.Y H:i" }}</td>
+                                <td class="py-3 px-4">
+                                    <button class="delete-booking bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
+                                            data-booking-id="{{ booking.id }}"
+                                            data-ajax-url="{% url 'booking:ajax_delete_booking' %}">
+                                        Удалить
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray-600 text-center">У вас нет активных бронирований.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    if (typeof $ === 'undefined') {
+        console.error('jQuery не загружен');
+        return;
+    }
+
+    $('.delete-booking').click(function() {
+        var $button = $(this);
+        var bookingId = $button.data('booking-id');
+        var ajaxUrl = $button.data('ajax-url');
+
+        if (confirm('Вы уверены, что хотите удалить эту бронь?')) {
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: JSON.stringify({'booking_id': bookingId}),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        $button.closest('tr').remove();
+                        if ($('.delete-booking').length === 0) {
+                            $('.bg-white.shadow-md.rounded-lg.p-6').html(
+                                '<p class="text-gray-600 text-center">У вас нет активных бронирований.</p>'
+                            );
+                        }
+                        alert(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка AJAX:', error);
+                    alert('Ошибка сервера: ' + error);
+                }
+            });
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

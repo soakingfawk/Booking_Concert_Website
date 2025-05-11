@@ -1,0 +1,170 @@
+{% extends 'booking/base.html' %}
+{% block title %}Бронирование мест{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">Бронирование мест</h2>
+
+    <!-- Легенда -->
+    <div class="flex justify-center mb-6 space-x-6">
+        <div class="flex items-center">
+            <div class="w-5 h-5 bg-green-500 rounded mr-2"></div>
+            <span class="text-gray-700 text-xs">Свободно</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-5 h-5 bg-red-500 rounded mr-2"></div>
+            <span class="text-gray-700 text-xs">Забронировано</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-5 h-5 bg-blue-500 rounded mr-2"></div>
+            <span class="text-gray-700 text-xs">Выбрано</span>
+        </div>
+    </div>
+
+    <!-- Инструкция -->
+    <p class="mt-8 text-center text-gray-600 text-sm">Нажмите на свободное место (зеленое), чтобы забронировать.</p>
+</div>
+
+<!-- Балкон -->
+<h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Балкон (148 мест)</h3>
+<div class="flex flex-col items-center mb-12" id="seat-grid" data-ajax-url="{% url 'booking:ajax_book_seat' %}">
+    {% for row in balcony_rows %}
+        <div class="flex items-center my-1 relative">
+            <span class="absolute -left-16 text-gray-700 font-bold w-12 text-right" style="font-size: 10px; right: calc(0px + {{ row.0 }}px);">Ряд {{ row.0 }}</span>
+            <div class="flex">
+                {% for seat in row.1 %}
+                    <button class="seat w-5 h-5 m-0.5 rounded text-xs font-medium transition duration-200
+                                   {% if seat.is_booked %}bg-red-500 text-white cursor-not-allowed{% else %}bg-green-500 text-white hover:bg-green-600{% endif %}"
+                            data-seat-id="{{ seat.id }}"
+                            {% if seat.is_booked %}disabled{% endif %}
+                            title="{{ seat.section }}: Ряд {{ seat.row }}, Место {{ seat.number }}">
+                        {{ seat.number }}
+                    </button>
+
+                    {% if row.0 == 7 %}
+                        {% if seat.number == 14 %}
+                            <div class="w-5"></div>  {# дополнительный проход после 14 места в 7 ряду #}
+                        {% endif %}
+                    {% else %}
+                        {% if seat.number == 10 %}
+                            <div class="w-5"></div><div class="w-5"></div><div class="w-5"></div><div class="w-5"></div><div class="w-5"></div><div class="w-5"></div> <!-- проход после 10 места -->
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Партер -->
+<h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Партер (445 мест)</h3>
+<div class="flex flex-col items-center mb-12" id="seat-grid-parterre" data-ajax-url="{% url 'booking:ajax_book_seat' %}">
+    {% for row_num, row in parterre_rows %}
+        <div class="flex items-center my-1 relative" style="margin-bottom: {{ row.margin_bottom }}px;"> <!-- Промежуток между рядами -->
+            <span class="absolute text-gray-700 font-bold w-12 text-right" style="font-size: 10px; left: calc(0px + {{ row.horizontal_shift }}px);">
+                Ряд {{ row_num }}
+            </span>
+
+            <!-- Пробел слева для сдвига левой секции -->
+            <div class="flex" style="transform: translateX({{ row.left_shift }}px);">
+                <div class="flex">
+                    {% for seat in row.left %}
+                        <button class="seat w-5 h-5 m-0.5 rounded text-xs font-medium transition duration-200
+                                       {% if seat.is_booked %}bg-red-500 text-white cursor-not-allowed{% else %}bg-green-500 text-white hover:bg-green-600{% endif %}"
+                                data-seat-id="{{ seat.id }}"
+                                {% if seat.is_booked %}disabled{% endif %}
+                                title="{{ seat.section }}: Ряд {{ row_num }}, Место {{ seat.number }}">
+                            {{ seat.number }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Проход -->
+            <div style="width: {{ row.pass_gap }}px;"></div>
+
+            <!-- Правая часть с сдвигом правой секции -->
+            <div class="flex" style="margin-left: {{ row.right_shift }}px;">
+                {% for seat in row.right %}
+                    <button class="seat w-5 h-5 m-0.5 rounded text-xs font-medium transition duration-200
+                                   {% if seat.is_booked %}bg-red-500 text-white cursor-not-allowed{% else %}bg-green-500 text-white hover:bg-green-600{% endif %}"
+                            data-seat-id="{{ seat.id }}"
+                            {% if seat.is_booked %}disabled{% endif %}
+                            title="{{ seat.section }}: Ряд {{ row_num }}, Место {{ seat.number }}">
+                        {{ seat.number }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Сцена -->
+<div class="bg-gray-800 text-white text-center py-4 mb-8 rounded-md max-w-2xl mx-auto">
+    Сцена
+</div>
+
+<script>
+$(document).ready(function() {
+    if (typeof $ === 'undefined') {
+        console.error('jQuery не загружен');
+        return;
+    }
+
+    $('.seat').click(function() {
+        if ($(this).prop('disabled')) return;
+
+        var $seat = $(this);
+        var seatId = $seat.data('seat-id');
+        var ajaxUrl = $seat.closest('[id^=seat-grid]').data('ajax-url');
+
+        if ($seat.hasClass('bg-blue-500')) {
+            $seat.removeClass('bg-blue-500 text-white').addClass('bg-green-500 hover:bg-green-600');
+        } else {
+            $('.seat.bg-blue-500').removeClass('bg-blue-500 text-white').addClass('bg-green-500 hover:bg-green-600');
+            $seat.removeClass('bg-green-500 hover:bg-green-600').addClass('bg-blue-500 text-white');
+        }
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            data: JSON.stringify({'seat_id': seatId}),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    $seat.removeClass('bg-blue-500 bg-green-500 hover:bg-green-600')
+                         .addClass('bg-red-500 cursor-not-allowed')
+                         .prop('disabled', true);
+                    alert(response.message);
+                } else {
+                    $seat.removeClass('bg-blue-500').addClass('bg-green-500 hover:bg-green-600');
+                    alert(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                $seat.removeClass('bg-blue-500').addClass('bg-green-500 hover:bg-green-600');
+                console.error('Ошибка AJAX:', error);
+                alert('Ошибка сервера: ' + error);
+            }
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
