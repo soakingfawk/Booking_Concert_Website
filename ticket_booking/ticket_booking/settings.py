@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'booking',
 ]
 
@@ -76,6 +77,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'booking.CustomUser'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
@@ -87,6 +91,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Не забудьте указать URL для статики
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True  # Mail.ru использует SSL, а не TLS
+EMAIL_HOST_USER = 'drnikita2005@mail.ru'
+EMAIL_HOST_PASSWORD = 'kn6RRR59vniFctGf91Hw'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

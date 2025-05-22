@@ -1,0 +1,16 @@
+{% extends 'booking/base.html' %}
+{% block title %}Детали бронирования{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Детали бронирования</h2>
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <p class="text-gray-600"><strong>Секция:</strong> {{ booking.seat.section }}</p>
+        <p class="text-gray-600"><strong>Ряд:</strong> {{ booking.seat.row }}</p>
+        <p class="text-gray-600"><strong>Место:</strong> {{ booking.seat.number }}</p>
+        <p class="text-gray-600"><strong>Дата бронирования:</strong> {{ booking.booking_date|date:"d.m.Y H:i" }}</p>
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'booking:profile' %}" class="text-blue-600 hover:text-blue-800">Вернуться к профилю</a>
+    </div>
+</div>
+{% endblock %}

@@ -3,7 +3,15 @@
 {% block content %}
 <div class="max-w-4xl mx-auto py-8">
     <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Личный кабинет</h2>
-    
+
+    <!-- Отображение аватара -->
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="Аватар пользователя" class="w-16 h-16 rounded-full mr-4">
+        {% else %}
+            <div class="w-16 h-16 bg-gray-200 rounded-full mr-4"></div>
+        {% endif %}
+
+
     <!-- Информация о пользователе -->
     <div class="bg-white shadow-md rounded-lg p-6 mb-8">
         <h3 class="text-xl font-semibold text-gray-700 mb-4">Ваши данные</h3>
@@ -36,6 +44,13 @@
                                 <td class="py-3 px-4 text-gray-700">{{ booking.seat.number }}</td>
                                 <td class="py-3 px-4 text-gray-700">{{ booking.booking_date|date:"d.m.Y H:i" }}</td>
                                 <td class="py-3 px-4">
+                                    <!-- Кнопка "Подробнее" -->
+                                    <a href="{% url 'booking:booking_detail' booking.id %}"
+                                       class="text-blue-600 hover:text-blue-800 underline">
+                                        Подробнее
+                                    </a>
+
+                                    <!-- Кнопка "Удалить" -->
                                     <button class="delete-booking bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
                                             data-booking-id="{{ booking.id }}"
                                             data-ajax-url="{% url 'booking:ajax_delete_booking' %}">
@@ -50,6 +65,10 @@
         {% else %}
             <p class="text-gray-600 text-center">У вас нет активных бронирований.</p>
         {% endif %}
+    </div>
+    <!-- Ссылка на редактирование профиля -->
+    <div class="text-center">
+        <a href="{% url 'booking:profile_edit' %}" class="text-blue-600 hover:underline">Редактировать профиль</a>
     </div>
 </div>
 

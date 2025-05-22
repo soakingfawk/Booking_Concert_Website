@@ -1,0 +1,40 @@
+{% extends 'booking/base.html' %}
+{% block title %}Редактирование профиля{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto py-8">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Редактирование профиля</h2>
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="relative">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                {{ field.label }}
+            </label>
+
+            {% if field.field.widget.input_type == 'password' %}
+            {% elif field.field.widget.input_type == 'file' %}
+                {{ field }}
+            {% else %}
+                <input type="{{ field.field.widget.input_type }}"
+                       name="{{ field.name }}"
+                       id="{{ field.id_for_label }}"
+                       value="{{ field.value|default_if_none:'' }}"
+                       class="mt-1 block w-full px-4 py-2 border {% if field.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                       {% if field.field.required %}required{% endif %}>
+            {% endif %}
+
+            {% if field.errors %}
+                {% for error in field.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            Сохранить
+        </button>
+    </form>
+</div>
+{% endblock %}

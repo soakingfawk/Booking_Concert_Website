@@ -1,0 +1,33 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Подтверждение Email{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2 class="text-2xl font-semibold mb-4">Подтверждение электронной почты</h2>
+    <p class="mb-4">Мы отправили код подтверждения на вашу электронную почту. Введите его ниже:</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="bg-red-100 text-red-700 p-2 rounded mb-2">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% if error %}
+    <div class="bg-red-100 text-red-700 p-2 rounded mb-2">
+        {{ error }}
+    </div>
+{% endif %}
+
+    <form method="post" class="max-w-md mx-auto">
+        {% csrf_token %}
+        <input type="text" name="verification_code" placeholder="Введите код" required
+               class="border border-gray-300 rounded p-2 w-full mb-4">
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            Подтвердить
+        </button>
+    </form>
+</div>
+{% endblock %}
